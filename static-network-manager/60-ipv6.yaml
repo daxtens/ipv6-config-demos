@@ -1,0 +1,13 @@
+network:
+    version: 2
+    renderer: NetworkManager
+    ethernets:
+        eth0:
+           #renderer: NetworkManager
+           # doesn't work! doesn't generate the right file (globally-managed-devices)
+           # as that's only generated for a *global* renderer
+           addresses: ["fd8f:1d7d:b141::3/64"]
+           gateway6: "fd8f:1d7d:b141::1"
+           nameservers:
+               addresses: ["fd8f:1d7d:b140::1"]
+

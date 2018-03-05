@@ -1,0 +1,9 @@
+network:
+    version: 2
+    ethernets:
+        # eth0 = backend
+        eth0:
+           addresses: ["fd8f:1d7d:b140::2/64"]
+        # eth1 = static
+        eth1:
+           addresses: ["fd8f:1d7d:b141::1/64"]

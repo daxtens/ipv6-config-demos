@@ -1,0 +1,18 @@
+network:
+    version: 2
+    ethernets:
+        eth0:
+           addresses: ["fd8f:1d7d:b140::1/64"]
+           routes:
+               # static network
+               - to: "fd8f:1d7d:b141::/64"
+                 via: "fd8f:1d7d:b140::2"
+               # slaac-rdnss
+               - to: "fd8f:1d7d:b142::/64"
+                 via: "fd8f:1d7d:b140::3"
+               # slaac-dhcp6
+               - to: "fd8f:1d7d:b143::/64"
+                 via: "fd8f:1d7d:b140::4"
+               # stful-dhcp6
+               - to: "fd8f:1d7d:b144::/64"
+                 via: "fd8f:1d7d:b140::5"

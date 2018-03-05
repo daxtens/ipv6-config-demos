@@ -1,0 +1,9 @@
+network:
+    version: 2
+    ethernets:
+        # eth0 = backend
+        eth0:
+           addresses: ["fd8f:1d7d:b140::4/64"]
+        # eth1 = slaac-dhcp6
+        eth1:
+           addresses: ["fd8f:1d7d:b143::1/64"]

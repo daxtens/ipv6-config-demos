@@ -1,0 +1,119 @@
+IPv6 Configuration Tests
+========================
+
+This repository contains examples of IPv6 network configurations
+that you can run and experiment with.
+
+It sets up the following methods for configuring the IPv6 address,
+nameserver and default route:
+ - static
+ - SLAAC + RDNSS
+ - SLAAC + Stateless DHCPv6
+ - Stateful DHCPv6
+
+It sets up 3 clients for each method:
+ - netplan with networkd,
+ - netplan with NetworkManager
+ - ifupdown.
+
+For full background details and a helpful diagram, see <blog link>.
+
+To ensure isolation it sets up a network for each of the 4 types of
+address configuration. It sets up a router on each network that
+provides the necessary services (router advertisment daemon, dhcp,
+etc). The routers are also connected to a backend network where there
+is a DNS server; this is used to test routing and DNS
+resolution.
+
+Running
+-------
+
+This uses LXD/LXC as light-weight 'virtual machines'.
+
+If you have a recent version of LXD installed but aren't using it on
+your machine, you can just run:
+
+$ ./test.sh
+
+It will configure LXD and spin up a number of networks and
+containers. Depending on your network and machine, this can take quite
+a while: on my (admittedly not great) connection, a full setup,
+including one-off downloads, takes over an hour. (Subsequent runs are
+faster, but still over 20 mins.) There should be ongoing status being
+printed out - there shouldn't be long silences.
+
+When done, the script prints useful info about next steps.
+
+To clean up the containers, run ./test.sh --cleanup
+
+You can get a tabular overview of the IP addresses at any point by running
+
+$ lxc list
+
+If something goes wrong, the script will abort (currently without much
+info). lxc list will at least tell you what stage it's up to which is
+helpful in debugging the problem.
+
+Using a VM
+----------
+
+If you don't have LXD, or are using it for something else, or would
+like another level of isolation, it's easy to run the whole process in
+a VM.
+
+First, make sure you have uvtool installed: the uvt-kvm command should
+work.
+
+Then, run
+
+$ ./vm.sh
+
+It will set up a VM, copy the files in, and spawn an SSH shell to the
+VM. Then you just run ./test.sh inside the VM.
+
+To re-enter the VM if you exit it, run 'uvt-kvm ssh --insecure ipv6-test'
+
+To clean up the VM, run 'virsh destroy ipv6-demo'
+
+Files
+-----
+
+You can see the files used by each configuration in the relevant
+directory.  The pattern is <network>-{router, client flavour}, so for
+example, the ifupdown client on the static network is configured with
+the files from the static-ifupdown directory, and the Stateful DHCP
+router configuration is in stful-dhcp6-router. The main file for the
+netplan clients is 60-ipv6.yaml.
+
+
+Notes
+-----
+
+1) Note that for *all* autoconfiguration with netplan, you set
+'dhcp6: true', even if DHCP is not used (e.g. SLAAC+RDNSS).
+
+2) Clients don't need any extra software to do IPv6;
+networkd/network-manager/ifupdown can do it all themselves.  There is
+one exception: for networkd and ifupdown on SLAAC+RDNSS, we need to
+install rdnssd. You don't need that for NetworkManager.
+
+3) Implementation detail: to prevent DNS server confusion, the
+containers don't have an IPv4 connection. If you want an IPv4
+connection in a container (e.g. to install something), run:
+
+lxc network attach external <container>
+lxc exec <container> -- dhclient eth1 # if router, eth2
+<do your stuff in the container>
+lxc exec <container> -- dhclient -x eth1 # only needed on xenial/ifupdown
+lxc network detatch external <container>
+
+There are examples of this in test.sh: see the apt_install function.
+
+Future work
+-----------
+
+Better status reporting as the process proceeds.
+The whole process could be made more efficent.
+Interoperability with existing LXD setups could be tested and improved.
+Better error messages if something fails.
+Timeouts so that if something is going wrong we don't wait forever.
