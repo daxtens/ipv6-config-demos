@@ -16,7 +16,8 @@ It sets up 3 clients for each method:
  - netplan with NetworkManager
  - ifupdown.
 
-For full background details and a helpful diagram, see <blog link>.
+For full background details and a helpful diagram, see:
+https://djanotes.blogspot.com/2018/03/ipv6-configuration-worked-executable.html
 
 To ensure isolation it sets up a network for each of the 4 types of
 address configuration. It sets up a router on each network that
