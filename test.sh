@@ -8,9 +8,9 @@ for n in $NETWORKS; do
 done
 NETWORKS="$NETWORKS external"
 IFUPDOWN_FLAVOUR=16.04
-NETPLAN_FLAVOUR=17.10
+NETPLAN_FLAVOUR=18.04
 
-lxd init --auto --storage-backend=dir
+lxd init --auto --storage-backend=dir || echo "error in lxd init; hoping it's already configured"
 
 delete_networks() {
 	for n in $NETWORKS; do
@@ -148,7 +148,7 @@ lxc file push static-router/60-ipv6.yaml static-router/etc/netplan/60-ipv6.yaml
 lxc exec static-router netplan generate
 lxc exec static-router netplan apply
 lxc exec static-router -- sh -c "echo 1 > /proc/sys/net/ipv6/conf/all/forwarding"
-lxc exec static-router -- ping6 fd8f:1d7d:b140::1 -c 2
+lxc exec static-router -- sh -c "while ! ping6 fd8f:1d7d:b140::1 -c 1 > /dev/null; do echo 'Waiting for IPv6 address'; sleep 1; done"
 
 # static-networkd
 launch static networkd "fd8f:1d7d:b141::1"

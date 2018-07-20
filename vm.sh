@@ -7,9 +7,8 @@ if [[ $ARCH == 'x86_64' ]]; then
     ARCH='amd64'
 fi
 
-# we need a recent LXD, so use Artful
-echo "Downloading the latest Artful image"
-uvt-simplestreams-libvirt sync release=artful arch=$ARCH
+echo "Downloading the latest Bionic image"
+uvt-simplestreams-libvirt sync release=bionic arch=$ARCH
 
 echo "Cleaning up old VM if it exists"
 uvt-kvm destroy ipv6-test || true
@@ -17,7 +16,7 @@ uvt-kvm destroy ipv6-test || true
 echo "Creating vm"
 # each LXC guest uses about 0.8GB (!!)
 # we create 17.
-uvt-kvm create ipv6-test release=artful arch=$ARCH --memory=2048 --disk=20
+uvt-kvm create ipv6-test release=bionic arch=$ARCH --memory=2048 --disk=20
 
 uvt-kvm wait ipv6-test
 echo "Copying files"
