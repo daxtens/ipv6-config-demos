@@ -76,7 +76,7 @@ function apt_install() {
 # backend: runs a web server and dns server
 # for simplicity lets make it a netplan
 BACKEND_IP="fd8f:1d7d:b140::1"
-lxc launch ubuntu:$NETPLAN_FLAVOUR backend -n backend
+lxc launch ubuntu:$NETPLAN_FLAVOUR backend --no-profiles -n backend -s default
 apt_install backend bind9
 lxc file push backend/named.conf.local backend/etc/bind/named.conf.local
 lxc file push backend/db.test backend/etc/bind/db.test
@@ -104,13 +104,13 @@ function launch() {
 	flavour=$2
 	router=$3
 	if [[ $flavour == "ifupdown" ]]; then
-		lxc init ubuntu:$IFUPDOWN_FLAVOUR $network-$flavour -n $network
+		lxc init ubuntu:$IFUPDOWN_FLAVOUR $network-$flavour --no-profiles -n $network -s default
 		lxc file push $network-$flavour/eth0-ipv6.cfg $network-$flavour/etc/network/interfaces.d/eth0-ipv6.cfg
 		# disable c-i's default: we don't have ipv4 and it will cause drama if we expect it
 		echo 'network: {config: disabled}' | lxc file edit $network-$flavour/etc/cloud/cloud.cfg.d/99-disable-network-config.cfg
 		lxc start $network-$flavour
 	else
-		lxc launch ubuntu:$NETPLAN_FLAVOUR $network-$flavour -n $network
+		lxc launch ubuntu:$NETPLAN_FLAVOUR $network-$flavour --no-profiles -n $network -s default
 		lxc file push $network-$flavour/60-ipv6.yaml $network-$flavour/etc/netplan/60-ipv6.yaml
 		if [[ $flavour == "network-manager" ]]; then
 			apt_install $network-$flavour network-manager
@@ -142,7 +142,7 @@ function launch() {
 ## static
 echo '#################### Static network ####################'
 # static-router
-lxc launch ubuntu:$NETPLAN_FLAVOUR static-router -n backend
+lxc launch ubuntu:$NETPLAN_FLAVOUR static-router --no-profiles -n backend -s default
 lxc network attach static static-router
 lxc file push static-router/60-ipv6.yaml static-router/etc/netplan/60-ipv6.yaml
 lxc exec static-router netplan generate
@@ -158,7 +158,7 @@ launch static ifupdown "fd8f:1d7d:b141::1"
 ## slaac-rdnss
 echo '#################### SLAAC + RDNSS network ####################'
 # slaac-rdnss-router
-lxc launch ubuntu:$NETPLAN_FLAVOUR slaac-rdnss-router -n backend
+lxc launch ubuntu:$NETPLAN_FLAVOUR slaac-rdnss-router --no-profiles -n backend -s default
 lxc file push slaac-rdnss-router/radvd.conf slaac-rdnss-router/etc/radvd.conf
 apt_install slaac-rdnss-router radvd
 lxc network attach slaac-rdnss slaac-rdnss-router
@@ -171,7 +171,7 @@ lxc exec slaac-rdnss-router -- sh -c "echo 1 > /proc/sys/net/ipv6/conf/all/forwa
 
 # slaac-rdnss-networkd
 # this one is a bit complex as we need rdnssd
-lxc launch ubuntu:$NETPLAN_FLAVOUR slaac-rdnss-networkd -n slaac-rdnss
+lxc launch ubuntu:$NETPLAN_FLAVOUR slaac-rdnss-networkd --no-profiles -n slaac-rdnss -s default
 apt_install slaac-rdnss-networkd rdnssd
 lxc file push slaac-rdnss-networkd/60-ipv6.yaml slaac-rdnss-networkd/etc/netplan/60-ipv6.yaml
 lxc exec slaac-rdnss-networkd netplan generate
@@ -185,7 +185,7 @@ lxc exec slaac-rdnss-networkd -- host ns.test
 launch slaac-rdnss network-manager "fd8f:1d7d:b142::1"
 
 # ifupdown also needs rdnssd
-lxc init ubuntu:$IFUPDOWN_FLAVOUR slaac-rdnss-ifupdown -n slaac-rdnss
+lxc init ubuntu:$IFUPDOWN_FLAVOUR slaac-rdnss-ifupdown --no-profiles -n slaac-rdnss -s default
 lxc file push slaac-rdnss-ifupdown/eth0-ipv6.cfg slaac-rdnss-ifupdown/etc/network/interfaces.d/eth0-ipv6.cfg
 echo 'network: {config: disabled}' | lxc file edit slaac-rdnss-ifupdown/etc/cloud/cloud.cfg.d/99-disable-network-config.cfg
 lxc start slaac-rdnss-ifupdown
@@ -199,7 +199,7 @@ lxc exec slaac-rdnss-ifupdown -- host ns.test
 ## slaac-dhcp6
 echo '#################### SLAAC + Stateless DHCPv6 network ####################'
 # slaac-dhcp6-router
-lxc launch ubuntu:$NETPLAN_FLAVOUR slaac-dhcp6-router -n backend
+lxc launch ubuntu:$NETPLAN_FLAVOUR slaac-dhcp6-router --no-profiles -n backend -s default
 lxc file push slaac-dhcp6-router/radvd.conf slaac-dhcp6-router/etc/radvd.conf
 apt_install slaac-dhcp6-router "radvd isc-dhcp-server"
 lxc file push slaac-dhcp6-router/dhcpd6.conf slaac-dhcp6-router/etc/dhcp/dhcpd6.conf
@@ -220,7 +220,7 @@ launch slaac-dhcp6 ifupdown "fd8f:1d7d:b143::1"
 ## stful-dhcp6
 echo '#################### Stateful DHCPv6 network ####################'
 # stful-dhcp6-router
-lxc launch ubuntu:$NETPLAN_FLAVOUR stful-dhcp6-router -n backend
+lxc launch ubuntu:$NETPLAN_FLAVOUR stful-dhcp6-router --no-profiles -n backend -s default
 lxc file push stful-dhcp6-router/radvd.conf stful-dhcp6-router/etc/radvd.conf
 apt_install stful-dhcp6-router "radvd isc-dhcp-server"
 lxc file push stful-dhcp6-router/dhcpd6.conf stful-dhcp6-router/etc/dhcp/dhcpd6.conf
