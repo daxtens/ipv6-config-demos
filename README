@@ -17,7 +17,7 @@ It sets up 3 clients for each method:
  - ifupdown.
 
 For full background details and a helpful diagram, see:
-https://djanotes.blogspot.com/2018/03/ipv6-configuration-worked-executable.html
+https://djanotes.wordpress.com/2018/03/06/ipv6-configuration-worked-executable-examples/
 
 To ensure isolation it sets up a network for each of the 4 types of
 address configuration. It sets up a router on each network that
